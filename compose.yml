@@ -1,0 +1,31 @@
+services:
+  mysql:
+    build:
+      context: ./services/mysql
+      dockerfile: Dockerfile
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASS}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  floci:
+    build:
+      context: ./services/floci
+      dockerfile: Dockerfile
+    container_name: floci
+    ports:
+      - "4566:4566"
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: ap-northeast-1
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  mysql_data:
