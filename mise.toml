@@ -1,4 +1,1 @@
 [env]
-DB_ROOT_PASSWORD= { value = "root_password", redact = true }
-DB_USER = { value = "user", redact = true }
-DB_PASS = { value = "password", redact = true }
