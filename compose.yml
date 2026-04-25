@@ -11,7 +11,6 @@ x-aws-env: &aws-env
   AWS_SECRET_ACCESS_KEY: testtest
   AWS_DEFAULT_REGION: ap-northeast-1
 
-
 services:
   mysql:
     build:
@@ -50,6 +49,79 @@ services:
       TZ: Asia/Tokyo
     logging: *logging-default
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    logging: *logging-default
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    depends_on:
+      - otel-collector
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./services/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    logging: *logging-default
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki
+    command:
+      - -config.file=/etc/loki/config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./services/loki/loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    logging: *logging-default
+
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: grafana
+    depends_on:
+      - jaeger
+      - loki
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./services/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    logging: *logging-default
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.101.0
+    container_name: otel-collector
+    command:
+      - --config=/etc/otelcol-contrib/config.yaml
+    depends_on:
+      - jaeger
+      - loki
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "13133:13133"
+    volumes:
+      - ./services/otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    logging: *logging-default
+
 volumes:
   mysql_data:
   floci-data:
+  grafana_data:
+  loki_data:
+  prometheus_data:
