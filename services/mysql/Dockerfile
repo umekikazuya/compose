@@ -1,4 +1,4 @@
-FROM mysql:8.0.45
+FROM mysql:8.4
 
 # パラメータ指定
 ENV LANG=ja_JP.UTF-8

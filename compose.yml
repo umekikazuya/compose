@@ -41,6 +41,18 @@ services:
     volumes:
       - floci-data:/app/data
 
+  floci-ui:
+    image: floci/floci-ui:latest
+    container_name: floci-ui
+    ports:
+      - "4500:4500"
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: ap-northeast-1
+      FLOCI_ENDPOINT: http://floci:4566
+      AWS_REGION: ap-northeast-1
+
   openapi:
     image: swaggerapi/swagger-ui
     container_name: openapi
